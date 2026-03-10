@@ -6,9 +6,35 @@
     <title>3body</title>
     <script src="script.js"></script>
 </head>
-<body onload="init()">
-    <div id="simulation-container">
+<body onload="main()">
+    <div style="float: left">
         <canvas id="canvas" width="1600" height="900"></canvas>
+    </div>
+    <div id="column" margin-left="20px">
+        <fieldset>
+            <legend>Animation Speed</legend>
+            <input type="number" id="speed" step="1" value="1">
+        </fieldset>
+        <fieldset>
+            <legend>Number of Bodies</legend>
+            <input type="number" id="bodies" step="1" value="3">
+        </fieldset>
+        <fieldset>
+            <legend>Masses of Bodies</legend>
+            B1: <input type="number" id="b1" step="1" value="1"><br/>
+            B2: <input type="number" id="b2" step="1" value="1"><br/>
+            B3: <input type="number" id="b3" step="1" value="1"><br/>
+            B4: <input type="number" id="b4" step="1" value="1"><br/>
+            B5: <input type="number" id="b5" step="1" value="1"><br/>
+            B6: <input type="number" id="b6" step="1" value="1"><br/>
+            B7: <input type="number" id="b7" step="1" value="1"><br/>
+            B8: <input type="number" id="b8" step="1" value="1"><br/>
+        </fieldset>
+        <fieldset>
+            <legend>Controls</legend>
+            <button onclick="init()">Restart</button>
+            <button onclick="pause()">Pause</button>
+        </fieldset>
     </div>
 </body>
 </html>
