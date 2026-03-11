@@ -5,11 +5,13 @@ let canvas=null;
 let ctx=null;
 let bodies = [];
 let tracks = [];
-const L_TRACK = 200;
+let L_TRACK = 200;
 const COLOR = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#000000', '#ffffff'];
 let cx = cy = 0;
+let hotSpots = []; // x, y, type ("body" or "vector")
+let dragged = -1; // Index of the dragged body or vector
 
-class Particle {   
+class Body {   
     constructor(x, y, size, color, weight, vx, vy) {
         this.x = x;
         this.y = y;
@@ -32,6 +34,42 @@ function main() {
     for (let i = 1; i <= 8; i++) {
         document.getElementById("B" + i).style.color = COLOR[i-1];
     }
+    window.addEventListener('mousedown', function(event) {
+        dragged = -1;
+        if (!running) {
+            let mx = event.clientX - canvas.getBoundingClientRect().left;
+            let my = event.clientY - canvas.getBoundingClientRect().top;
+            for (let i = 0; i < hotSpots.length; i++) {
+                let hs = hotSpots[i];
+                let dx = mx - hs.x;
+                let dy = my - hs.y;
+                if (dx*dx + dy*dy < 100) {
+                    dragged = i;
+                }
+            }
+        }
+    });
+    window.addEventListener('mouseup', function(event) {
+        dragged = -1;
+    });
+    window.addEventListener('mousemove', function(event) {
+        let mx = event.clientX - canvas.getBoundingClientRect().left;
+        let my = event.clientY - canvas.getBoundingClientRect().top;
+        if (dragged >= 0) {
+            let hs = hotSpots[dragged];
+            if (hs.type == "vector") {
+                bodies[hs.i].vx = (mx - bodies[hs.i].x) / 100;
+                bodies[hs.i].vy = (my - bodies[hs.i].y) / 100;
+                adjustVectors((hs.i + 1) % bodies.length);
+            }
+            else if (hs.type == "body") {
+                bodies[hs.i].x = mx;
+                bodies[hs.i].y = my;
+                adjustBodies((hs.i + 1) % bodies.length);
+            }
+        }
+    });
+
     init();
     animate();
 }
@@ -43,25 +81,44 @@ function init() {
     NO_PLANETS = parseInt(document.getElementById('bodies').value);
     // Create random planets into bodies array
     for (let i = 0; i < NO_PLANETS; i++) {
-        let size = Math.random() * 5 + 1; size = 5;
         let x = canvas.width / 2 +(Math.random() - 0.5) * 200;
         let y = canvas.height / 2 +(Math.random() - 0.5) * 200;
         let color = COLOR[i];
-        let weight = Math.random() * 0.5 + 0.5; weight = weights[i];
-        weight = parseFloat(document.getElementById('b' + (i+1)).value);
+        let weight = parseFloat(document.getElementById('b' + (i+1)).value);
+        let size = 3 + 2 * weight;
         let vx = 1 * (Math.random() - 0.5);
         let vy = 1 * (Math.random() - 0.5);
-        bodies.push(new Particle(x, y, size, color, weight, vx, vy));
+        bodies.push(new Body(x, y, size, color, weight, vx, vy));
         tracks.push([]);
     }
+    adjustBodies(bodies.length - 1);
+    adjustVectors(bodies.length - 1);
+}
+
+function adjustVectors(j) {
     // Set the velocity of the last body to ensure the center of mass is stationary
     let vx = vy = 0;
-    for (let i = 0; i < bodies.length-1; i++) {
-        vx += bodies[i].vx;
-        vy += bodies[i].vy;
+    for (let i = 0; i < bodies.length; i++) {
+        if (i != j) {
+            vx += bodies[i].vx;
+            vy += bodies[i].vy;
+        }
     }
-    bodies[bodies.length-1].vx = -vx;
-    bodies[bodies.length-1].vy = -vy;
+    bodies[j].vx = -vx;
+    bodies[j].vy = -vy;
+}
+
+function adjustBodies(j) {
+    // Set the position of the last body to ensure the center of mass is stationary
+    cx = cy = 0;
+    for (let i = 0; i < bodies.length; i++) {
+        if (i != j) {
+            cx += bodies[i].weight * (bodies[i].x - canvas.width / 2);
+            cy += bodies[i].weight * (bodies[i].y - canvas.height / 2);
+        }
+    }
+    bodies[j].x = -cx / bodies[j].weight + canvas.width / 2;
+    bodies[j].y = -cy / bodies[j].weight + canvas.height / 2;
 }
 
 function animate() {
@@ -75,16 +132,7 @@ function animate() {
 }
 
 function calc() {
-    // Calculate the center of mass - should be stationary
-    cx = cy = mass = 0;
-    for (let i = 0; i < bodies.length; i++) {
-        let p = bodies[i];
-        cx += p.x * p.weight;
-        cy += p.y * p.weight;
-        mass += p.weight;
-    }
-    cx /= mass;
-    cy /= mass;
+    L_TRACK = parseInt(document.getElementById('track').value);
     // Calculate the new speed vectors from the gravitational forces between bodies
     for (let i = 0; i < bodies.length; i++) {
         let p = bodies[i];
@@ -115,27 +163,48 @@ function calc() {
         // Add the current position to the track
         tracks[i].push({x: p.x, y: p.y});
         // Limit the length of the track
-        if (tracks[i].length > L_TRACK) {
+        while (tracks[i].length > L_TRACK) {
             tracks[i].shift();
         }
     }
 }
 
 function draw() {
+    // Calculate the center of mass - should be stationary
+    cx = cy = mass = 0;
+    for (let i = 0; i < bodies.length; i++) {
+        let p = bodies[i];
+        cx += p.x * p.weight;
+        cy += p.y * p.weight;
+        mass += p.weight;
+    }
+    cx /= mass;
+    cy /= mass;
+    // Clear canvas
     ctx.beginPath();
     ctx.fillStyle = "#bbbbbb";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fill();
+    // Draw center of canvas
+    ctx.beginPath();
+    ctx.arc(canvas.width/2, canvas.height/2, 3, 0, Math.PI * 2);
+    ctx.strokeStyle = '#000000';
+    ctx.stroke();
+    // Draw center of mass
     ctx.beginPath();
     ctx.arc(cx, cy, 3, 0, Math.PI * 2);
     ctx.fillStyle = '#888888';
     ctx.fill();
+    // Draw bodies and tracks
+    hotSpots = [];
     for (let i = 0; i < bodies.length; i++) {
         let p = bodies[i];
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
         ctx.fill();
+        hotSpots.push({x: p.x, y: p.y, type: "body", i: i});
+        // Draw track reverse
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         for (let j = tracks[i].length - 1; j >= 0; j--) {
@@ -150,20 +219,25 @@ function draw() {
         for (let i = 0; i < bodies.length; i++) {
             let p = bodies[i];
             drawArrow(p.x, p.y, p.x + p.vx * 100, p.y + p.vy * 100);
+            hotSpots.push({x: p.x + p.vx * 100, y: p.y + p.vy * 100, type: "vector", i: i});
         }
     }
 }
 
 function drawArrow(fromx, fromy, tox, toy) {
-    var headlen = 10;
+    var headlen = 12;
     var angle = Math.atan2(toy - fromy, tox - fromx);
     ctx.beginPath();
     ctx.moveTo(fromx, fromy);
     ctx.lineTo(tox, toy);
-    ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
-    ctx.moveTo(tox, toy);
-    ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
     ctx.strokeStyle = '#888888';
-    ctx.lineWidth = 1;
     ctx.stroke();
+    ctx.beginPath
+    ctx.moveTo(tox, toy);
+    ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 8), toy - headlen * Math.sin(angle - Math.PI / 8));
+    ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 8), toy - headlen * Math.sin(angle + Math.PI / 8));
+    ctx.lineTo(tox, toy);
+    ctx.fillStyle = '#888888';
+    ctx.lineWidth = 1;
+    ctx.fill();
 }

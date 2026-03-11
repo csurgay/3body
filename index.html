@@ -12,10 +12,6 @@
     </div>
     <div id="column" margin-left="20px" style="float: left;">
         <fieldset>
-            <legend>Animation Speed</legend>
-            <input type="number" id="speed" step="1" value="1">
-        </fieldset>
-        <fieldset>
             <legend>Number of Bodies</legend>
             <input type="number" id="bodies" step="1" value="3">
         </fieldset>
@@ -34,6 +30,14 @@
             <legend>Controls</legend>
             <button onclick="init()">Restart</button>
             <button onclick="pause()">Pause</button>
+        </fieldset>
+        <fieldset>
+            <legend>Animation Speed</legend>
+            <input type="number" id="speed" step="1" value="1">
+        </fieldset>
+        <fieldset>
+            <legend>Track length</legend>
+            <input type="range" id="track" min="30" max="1000" value="200">
         </fieldset>
     </div>
 </body>
