@@ -22,19 +22,16 @@ class Particle {
 }
 
 function pause() {
-    if (!running) {
-        running = true;
-        animate();
-    }
-    else {
-        running = false;
-    }
+    running = !running;
 }
 
 function main() {
     console.log('init');
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
+    for (let i = 1; i <= 8; i++) {
+        document.getElementById("B" + i).style.color = COLOR[i-1];
+    }
     init();
     animate();
 }
@@ -68,11 +65,13 @@ function init() {
 }
 
 function animate() {
-    for (let i = 0; i < document.getElementById("speed").value; i++) {
-        calc();
+    if (running) {
+        for (let i = 0; i < document.getElementById("speed").value; i++) {
+            calc();
+        }
     }
     draw();
-    if (running) requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
 }
 
 function calc() {
@@ -146,4 +145,25 @@ function draw() {
         ctx.lineWidth = 1;
         ctx.stroke();
     }
+    // Speed vector arrows when paused
+    if (!running) {
+        for (let i = 0; i < bodies.length; i++) {
+            let p = bodies[i];
+            drawArrow(p.x, p.y, p.x + p.vx * 100, p.y + p.vy * 100);
+        }
+    }
+}
+
+function drawArrow(fromx, fromy, tox, toy) {
+    var headlen = 10;
+    var angle = Math.atan2(toy - fromy, tox - fromx);
+    ctx.beginPath();
+    ctx.moveTo(fromx, fromy);
+    ctx.lineTo(tox, toy);
+    ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+    ctx.moveTo(tox, toy);
+    ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+    ctx.strokeStyle = '#888888';
+    ctx.lineWidth = 1;
+    ctx.stroke();
 }
