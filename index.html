@@ -8,7 +8,7 @@
 </head>
 <body onload="main()">
     <div style="float: left">
-        <canvas id="canvas" width="1600" height="900"></canvas>
+        <canvas id="canvas" width="1000" height="900"></canvas>
     </div>
     <div id="column" margin-left="20px" style="float: left;">
         <fieldset>
@@ -28,16 +28,20 @@
         </fieldset>
         <fieldset>
             <legend>Controls</legend>
-            <button onclick="init()">Restart</button>
-            <button onclick="pause()">Pause</button>
+            <button onclick="init(); document.activeElement?.blur?.();">Restart</button>
+            <button onclick="pause(); document.activeElement?.blur?.();">Pause</button>
         </fieldset>
         <fieldset>
             <legend>Animation Speed</legend>
             <input type="number" id="speed" step="1" value="1">
         </fieldset>
         <fieldset>
-            <legend>Track length</legend>
-            <input type="range" id="track" min="30" max="1000" value="200">
+            <legend>Past track length</legend>
+            <input type="range" id="track" min="30" max="1000" value="100">
+        </fieldset>
+        <fieldset>
+            <legend>Future track length</legend>
+            <input type="range" id="future" min="30" max="1000" value="100">
         </fieldset>
     </div>
 </body>
