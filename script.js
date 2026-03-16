@@ -34,6 +34,11 @@ function main() {
     for (let i = 1; i <= 8; i++) {
         document.getElementById("B" + i).style.color = COLOR[i-1];
     }
+    window.addEventListener('keypress', function(event) {
+        if (event.key === ' ') {
+            pause();
+        }
+    });
     window.addEventListener('mousedown', function(event) {
         dragged = -1;
         if (!running) {
