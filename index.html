@@ -30,6 +30,7 @@
             <legend>Controls</legend>
             <button onclick="init(); document.activeElement?.blur?.();">Restart</button>
             <button onclick="pause(); document.activeElement?.blur?.();">Pause</button>
+            <button onclick="orbital(); document.activeElement?.blur?.();">Orbital</button>
         </fieldset>
         <fieldset>
             <legend>Animation Speed</legend>
@@ -42,6 +43,10 @@
         <fieldset>
             <legend>Future track length</legend>
             <input type="range" id="future" min="30" max="1000" value="100">
+        </fieldset>
+        <fieldset>
+            <legend>Motion vector length</legend>
+            <input type="range" id="vector" min="10" max="200" value="30">
         </fieldset>
     </div>
 </body>

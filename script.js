@@ -9,6 +9,7 @@ let tracks = [];
 let future = [];
 let L_TRACK = 200;
 let L_FUTURE = 200;
+let L_VECTOR = 30;
 const COLOR = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#000000', '#ffffff'];
 let cx = cy = 0;
 let hotSpots = []; // x, y, type ("body" or "vector")
@@ -276,4 +277,17 @@ function drawArrow(fromx, fromy, tox, toy) {
     ctx.fillStyle = '#888888';
     ctx.lineWidth = 1;
     ctx.fill();
+}
+
+function orbital() {
+    init();
+    L_VECTOR = parseInt(document.getElementById('vector').value);
+    alpha = Math.PI * 2 / NO_PLANETS;
+    for (let i = 0; i < NO_PLANETS; i++) {
+        let r = 150;
+        bodies[i].x = canvas.width / 2 + r * Math.cos(i * alpha);
+        bodies[i].y = canvas.height / 2 + r * Math.sin(i * alpha);
+        bodies[i].vx = -Math.sin(i * alpha) * L_VECTOR / 100;
+        bodies[i].vy = Math.cos(i * alpha) * L_VECTOR / 100;
+    }
 }
