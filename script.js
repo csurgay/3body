@@ -10,6 +10,7 @@ let future = [];
 let L_TRACK = 200;
 let L_FUTURE = 200;
 let L_VECTOR = 30;
+let OLD_VECTOR = 30;
 const COLOR = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#000000', '#ffffff'];
 let cx = cy = 0;
 let hotSpots = []; // x, y, type ("body" or "vector")
@@ -80,7 +81,6 @@ function main() {
             }
         }
     });
-
     init();
     animate();
 }
@@ -135,6 +135,11 @@ function adjustBodies(j) {
 }
 
 function animate() {
+    L_VECTOR = parseInt(document.getElementById('vector').value);
+    if (L_VECTOR != OLD_VECTOR) {
+        orbitalVectors();
+        OLD_VECTOR = L_VECTOR;
+    }
     if (running) {
         L_TRACK = parseInt(document.getElementById('track').value);
         for (let i = 0; i < document.getElementById("speed").value; i++) {
@@ -284,10 +289,17 @@ function orbital() {
     L_VECTOR = parseInt(document.getElementById('vector').value);
     alpha = Math.PI * 2 / NO_PLANETS;
     for (let i = 0; i < NO_PLANETS; i++) {
-        let r = 150;
-        bodies[i].x = canvas.width / 2 + r * Math.cos(i * alpha);
-        bodies[i].y = canvas.height / 2 + r * Math.sin(i * alpha);
-        bodies[i].vx = -Math.sin(i * alpha) * L_VECTOR / 100;
-        bodies[i].vy = Math.cos(i * alpha) * L_VECTOR / 100;
+        let r = 150 / bodies[i].weight;
+        bodies[i].alpha = i * alpha;
+        bodies[i].x = canvas.width / 2 + r * Math.cos(bodies[i].alpha);
+        bodies[i].y = canvas.height / 2 + r * Math.sin(bodies[i].alpha);
+        orbitalVectors();
+    }
+}
+
+function orbitalVectors() {
+    for (let i = 0; i < NO_PLANETS; i++) {
+        bodies[i].vx = -Math.sin(bodies[i].alpha) * L_VECTOR / 100;
+        bodies[i].vy = Math.cos(bodies[i].alpha) * L_VECTOR / 100;
     }
 }
